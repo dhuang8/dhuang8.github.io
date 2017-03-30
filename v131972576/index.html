@@ -1,0 +1,89 @@
+<html>
+			<head>
+			    <title>v131972576</title><html>
+
+<head>
+    <title>Chart</title>
+
+    <script src="https://www.google-analytics.com/analytics.js"></script>
+    <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script src="../jquery.colorbox-min.js"></script>
+
+    <script src="http://player.twitch.tv/js/embed/v1.js"></script>
+    <script>
+        (function(i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r;
+            i[r] = i[r] || function() {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date();
+            a = s.createElement(o), m = s.getElementsByTagName(o)[0];
+            a.async = 1;
+            a.src = g;
+            m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+        ga('create', 'UA-70407057-2', 'auto');
+        ga('send', 'pageview');
+    </script>
+    <style>
+        iframe {
+            width: 100%;
+            height: 100%
+        }
+        body {
+        	margin:0;
+        	position:absolute;
+        	top:0;
+        	bottom:0;
+        	width:100%;
+        	background-color:black;
+        }
+        #container {
+        	width:100%;
+        	overflow-x:auto;
+        	overflow-y:hidden;
+        	height:132px;
+        	user-select: none;
+        	background-color:white;
+        	position:relative
+        }
+        #bar {
+        	background-color: #aaa;
+		    height: 132px;
+		    position: absolute;
+		    z-index: 500 !important;
+		    width: 2px;
+		    left: 75px;
+        }
+        #chart {
+        	height: 100%;
+        	pointer-events:auto;
+        }
+        #bottomstuff {
+        	position:absolute;
+        	top:132px;
+        	overflow-y:auto;
+        	bottom:0;
+        	width:100%
+        }
+        #tplayer {
+        	margin:auto;
+        	display:table;
+        	width:100%;
+        	height:100%
+        }
+    </style>
+</head>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript" src="../ggchart.js"></script>
+
+<body>
+    <div id="container" tabindex="1">
+        <div id="bar"></div>
+        <div id="chart"></div>
+    </div>
+    <div id="bottomstuff">
+        <div id="tplayer"></div>
+    </div>
+</body>
+
+</html>
