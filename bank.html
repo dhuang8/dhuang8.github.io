@@ -1,0 +1,392 @@
+<!doctype>
+<html>
+
+<head>
+    <script type="text/javascript" src="web3.min.js"></script>
+    <script src="http://code.dappbench.com/browser-solc.min.js" type="text/javascript"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+    <script scr="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <style>
+        td {
+            padding: 0 10px
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="container">
+        <h1>contract</h1>
+        <div id="">
+            <h3>eth node</h3>
+            <input id="url" type="text" value="http://localhost:8545">
+
+
+            <h3>send contract</h3>
+
+            <button type="button" onClick="setcontract();">compile contract</button>
+            <br>
+        </div>
+        <br>
+        <div id="mainstuff" style="display:none">
+            <div class="row">
+                <div class="col-md-6">
+                    <h1>Wei</h1>
+                    <div class="panel panel-default">
+                        <div id="wei" class="panel-body" style="overflow-x:auto">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h1>Balances</h1>
+                    <div class="panel panel-default">
+                        <div id="balances" class="panel-body" style="overflow-x:auto">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <span>Main address</span>
+                <select id="mainaddy"></select>
+            </div>
+
+            <!--<span>Create tokens </span><input type="number" id="numcreate" placeholder="number to create"> <input type="button"
+                value="Create token" id="buttoncreate">
+            <br>-->
+            <span>Transfer </span><input type="number" id="numtransfer" placeholder="number to tranfer"><span> tokens to </span>            <select id="addresstransfer"></select> <input type="button" value="Transfer token" id="buttontransfer">
+            <br>
+
+            <span>Burn </span><input type="number" id="numburn" placeholder="number to burn"><input type="button" value="Burn"
+                id="buttonburn">
+            <br>
+
+            <span>Buy </span><input type="number" id="numbuy" placeholder="number to buy"><input type="button" value="Buy"
+                id="buttonbuy">
+            <br>
+
+            <span>Sell </span><input type="number" id="numsell" placeholder="number to sell"><input type="button" value="Sell"
+                id="buttonsell">
+            <br>
+            <span>Doesn't do anything</span><input type="button" value="Get total" id="buttontotal">
+        </div>
+
+        <br><br>
+        <h2>Console</h2>
+        <button type="button" onClick="clearconsole();">clear console</button>
+        <div class="panel panel-default">
+            <div id="console" class="panel-body" style="height:200px;overflow-y:auto">
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
+
+
+<script type="text/javascript">
+    var balances = [];
+
+    function clearconsole() {
+        $("#console").html("");
+    }
+
+    function updateBalance() {
+        let table = $("<table>");
+        let header = $("<tr>")
+        header.append($("<th>").append("address"))
+        header.append($("<th>").append("balance"))
+        table.append(header);
+        for (let addy in balances) {
+            let row = $("<tr>");
+            let col = $("<td>").append(addy);
+            row.append(col);
+            col = $("<td>").append(balances[addy].toString(10));
+            row.append(col);
+            table.append(row);
+        }
+        $("#balances").html(table);
+    }
+
+    function updateWei() {
+        let table = $("<table>");
+        let header = $("<tr>")
+        header.append($("<th>").append("address"))
+        header.append($("<th>").append("wei"))
+        table.append(header);
+        for (let num in web3.eth.accounts) {
+            let row = $("<tr>");
+            let col = $("<td>").append(web3.eth.accounts[num]);
+            row.append(col);
+            col = $("<td>").append(web3.eth.getBalance(web3.eth.accounts[num]).toString(10));
+            row.append(col);
+            table.append(row);
+        }
+        $("#wei").html(table);
+    }
+    var Web3 = require('web3');
+    var web3 = new Web3();
+
+
+    var address;
+    function setcontract() {
+
+
+        var http = $("#url").val()
+        write("connecting to " + http + " and compiling contract");
+        var Web3 = require('web3');
+        web3 = new Web3();
+        web3.setProvider(new web3.providers.HttpProvider(http));
+        address = web3.eth.coinbase;
+        web3.eth.defaultAccount = address;
+        //bytecode = $("#bytecode").val();
+        //abi = JSON.parse($("#abi").val());
+        var myContract = web3.eth.contract(abi);
+
+        let select = $("select#addresstransfer");
+        select.html("")
+        for (let addy in web3.eth.accounts) {
+            select.append($("<option>").attr("value", web3.eth.accounts[addy]).text(web3.eth.accounts[addy]))
+        }
+
+        let mainaddyselect = $("select#mainaddy");
+        mainaddyselect.html("")
+        for (let addy in web3.eth.accounts) {
+            mainaddyselect.append($("<option>").attr("value", web3.eth.accounts[addy]).text(web3.eth.accounts[addy]))
+        }
+        $("#mainstuff").show();
+        sendcontract();
+        //});
+    };
+
+    //Load a specific compiler version
+
+
+    var abi = [{"constant":false,"inputs":[{"name":"_amount","type":"uint256"}],"name":"sellToken","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_amount","type":"uint256"}],"name":"createToken","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"kill","outputs":[{"name":"status","type":"bool"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_amount","type":"uint256"}],"name":"burn","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"getTotal","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"buyToken","outputs":[{"name":"","type":"bool"}],"payable":true,"type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_amount","type":"uint256"}],"name":"transfer","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"balance","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"inputs":[],"payable":false,"type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"name":"_amount","type":"uint256"},{"indexed":false,"name":"_newBalance","type":"uint256"}],"name":"Create","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"_from","type":"address"},{"indexed":false,"name":"_to","type":"address"},{"indexed":false,"name":"_amount","type":"uint256"},{"indexed":false,"name":"newFromBalance","type":"uint256"},{"indexed":false,"name":"newToBalance","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"_addy","type":"address"},{"indexed":false,"name":"_amount","type":"uint256"}],"name":"Balance","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"_addy","type":"address"},{"indexed":false,"name":"_amount","type":"uint256"}],"name":"Burn","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"_addy","type":"address"},{"indexed":false,"name":"_amount","type":"uint256"}],"name":"BuyToken","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"_addy","type":"address"},{"indexed":false,"name":"_amount","type":"uint256"}],"name":"SellToken","type":"event"}]
+    var bytecode = "6060604052341561000c57fe5b5b60008054600160a060020a03191633600160a060020a03161781556003555b5b6106b78061003c6000396000f300606060405236156100725763ffffffff60e060020a6000350416632397e4d781146100745780632d571cc41461009b57806341c0e1b5146100c257806342966c68146100e6578063775a25e31461010d578063a48217191461012f578063a9059cbb1461014b578063e3d670d71461017e575bfe5b341561007c57fe5b6100876004356101ac565b604080519115158252519081900360200190f35b34156100a357fe5b6100876004356102b3565b604080519115158252519081900360200190f35b34156100ca57fe5b610087610387565b604080519115158252519081900360200190f35b34156100ee57fe5b6100876004356103b3565b604080519115158252519081900360200190f35b341561011557fe5b61011d610466565b60408051918252519081900360200190f35b61008761046d565b604080519115158252519081900360200190f35b341561015357fe5b610087600160a060020a036004351660243561051b565b604080519115158252519081900360200190f35b341561018657fe5b61011d600160a060020a0360043516610659565b60408051918252519081900360200190f35b600160a060020a033316600090815260016020526040812054829010806101d35750600182105b156101de5760006000fd5b600160a060020a033316600081815260016020526040808220805486900390556003805486900390555184156108fc0291859190818181858888f19350505050151561022657fe5b60408051600160a060020a03331681526020810184905281517ff567b51b9deaa2fa38dd169801137cdc7532865d1e82192be079971d61e3ce86929181900390910190a1600160a060020a03331660008181526001602090815260409182902054825193845290830152805160008051602061066c8339815191529281900390910190a15060015b919050565b6000805433600160a060020a0390811691161415806102d25750600182105b156102dd5760006000fd5b600160a060020a03331660009081526001602090815260409182902080548501815560038054860190555482518581529182015281517f42ec2e0bdfc50680a77511c1785be2a2c2bfb3ee1159a2e6de27192eb12ec3b1929181900390910190a1600160a060020a03331660008181526001602090815260409182902054825193845290830152805160008051602061066c8339815191529281900390910190a15060015b919050565b6000805433600160a060020a039081169116146103ac57600054600160a060020a0316ff5b5060015b90565b600060018210156103c45760006000fd5b600160a060020a033316600081815260016020908152604091829020805486900390558151928352820184905280517fcc16f5dbb4873280815c1ee09dbd06736cffcc184412cf7a71a0fdb75d397ca59281900390910190a1600160a060020a03331660008181526001602090815260409182902054825193845290830152805160008051602061066c8339815191529281900390910190a15060015b919050565b6003545b90565b600160a060020a03331660008181526001602090815260408083208054349081019091556003805482019055815194855291840191909152805191927fdd06b66c3ba8126086cd863137d6f3b86ce5bcf4309cac390cc265e39194d0b2929081900390910190a1600160a060020a03331660008181526001602090815260409182902054825193845290830152805160008051602061066c8339815191529281900390910190a15060015b90565b600160a060020a033316600090815260016020526040812054829010806105425750600182105b1561054d5760006000fd5b600160a060020a0333811660008181526001602090815260408083208054889003815594881680845292819020805488019081905594548151948552918401929092528282018690526060830152608082019290925290517fc817d75deaa278e988c41cf549ef38fe195ab65e0e64cd67ba47f0d185690d589181900360a00190a1600160a060020a03331660008181526001602090815260409182902054825193845290830152805160008051602061066c8339815191529281900390910190a1600160a060020a03831660008181526001602090815260409182902054825193845290830152805160008051602061066c8339815191529281900390910190a15060015b92915050565b600160205260009081526040902054815600134e340554ff8a7d64280a2a28b982df554e2595e5bf45cd39368f31099172a6a165627a7a723058208d59713fd30865d3aaf4cb76059f17111dcb12b938acbd81fa15ab382bc78a7b0029"
+    //var address = "0xca182b044bcf3e105aea888717b5589c9015bc01";
+
+    function sendcontract() {
+        var myContract = web3.eth.contract(abi);
+
+        console.log(3)
+        //console.log("bc",bytecode)
+        let arguments = [];
+        arguments.push({ data: bytecode, from: address, gas: 1000000 });
+        arguments.push(function (err, myContract) {
+            if (!err) {
+                // NOTE: The callback will fire twice!
+                if (!myContract.address) {
+                    //console.log("transaction hash:", myContract.transactionHash) // The hash of the transaction, which deploys the contract
+                    write("transaction hash " + myContract.transactionHash);
+                    //contractEventEmitter.emit("hash",myContract.transactionHash);
+                    // check address on the second call (contract deployed)
+                } else {
+                    //console.log("address",myContract.address) // the contract address
+
+                    write("contract address " + myContract.address);
+                    initializeButtons();
+                    updateWei();
+                    updateBalance();
+
+                    //contractEventEmitter.emit("address",myContract.address);
+                }
+
+                // Note that the returned "myContractReturned" === "myContract",
+                // so the returned "myContractReturned" object will also get the address set.
+            } else {
+                console.log("err", err)
+                //contractEventEmitter.emit("err",err)
+            }
+        })
+        contractInstance = myContract.new.apply(myContract, arguments)
+        console.log(4)
+
+    }
+
+    function initializeButtons() {
+        $("#buttoncreate").on("click", () => {
+            web3.eth.defaultAccount = $("select#mainaddy > option:selected").val();
+            //new Promise((resolve, reject) => {
+            contractInstance.createToken($("#numcreate").val(), (err, res) => {
+                if (!err) {
+                    console.log("create", res)
+                    //resolve(res);
+                }
+                //reject(err);
+            })
+            /*}).then((d) => {
+                if (d) write("create t hash: " + d, "blue")
+                else write(name);
+            }).catch((e) => {
+                write("ERROR " + name + ": " + e)
+            })*/
+        })
+
+        $("#buttontransfer").on("click", () => {
+            web3.eth.defaultAccount = $("select#mainaddy > option:selected").val();
+            new Promise((resolve, reject) => {
+                contractInstance.transfer($("select#addresstransfer > option:selected").val(), $("#numtransfer").val(), (err, res) => {
+                    if (!err) resolve(res);
+                    reject(err);
+                })
+            }).then((d) => {
+                if (d) write("transfer t hash: " + d, "blue")
+                else write(name);
+            }).catch((e) => {
+                write("ERROR " + name + ": " + e, "red")
+            })
+        })
+
+
+
+        $("#buttonburn").on("click", () => {
+            web3.eth.defaultAccount = $("select#mainaddy > option:selected").val();
+            new Promise((resolve, reject) => {
+                contractInstance.burn($("select#addresstransfer > option:selected").val(), $("#numburn").val(), (err, res) => {
+                    if (!err) resolve(res);
+                    reject(err);
+                })
+            }).then((d) => {
+                if (d) write("transfer t hash: " + d, "blue")
+                else write(name);
+            }).catch((e) => {
+                write("ERROR " + name + ": " + e, "red")
+            })
+        })
+
+        $("#buttonbuy").on("click", () => {
+            web3.eth.defaultAccount = $("select#mainaddy > option:selected").val();
+            new Promise((resolve, reject) => {
+                contractInstance.buyToken({ value: $("#numbuy").val() }, (err, res) => {
+                    if (!err) resolve(res);
+                    reject(err);
+                })
+            }).then((d) => {
+                if (d) write("transfer t hash: " + d, "blue")
+                else write(name);
+            }).catch((e) => {
+                write("ERROR " + name + ": " + e, "red")
+            })
+        })
+
+        $("#buttonsell").on("click", () => {
+            web3.eth.defaultAccount = $("select#mainaddy > option:selected").val();
+            new Promise((resolve, reject) => {
+                contractInstance.suyToken($("#numsell").val(), (err, res) => {
+                    if (!err) resolve(res);
+                    reject(err);
+                })
+            }).then((d) => {
+                if (d) write("transfer t hash: " + d, "blue")
+                else write(name);
+            }).catch((e) => {
+                write("ERROR " + name + ": " + e, "red")
+            })
+        })
+
+
+        var createevent = contractInstance.Create({});
+        createevent.watch((err, result) => {
+            if (!err) write("created " + result.args._amount + " tokens. new balance: " + result.args._newBalance)
+            else write("err " + err, "red")
+        })
+
+
+        var transferevent = contractInstance.Transfer({});
+        transferevent.watch((err, result) => {
+            if (!err) {
+                write("transferred " + result.args._amount + " tokens from " + result.args._from + " to " + result.args._to + ".");
+                //write("balance " + result.args._from + ": " + result.args.newFromBalance);
+                //write("balance " + result.args._to + ": " + result.args.newToBalance);
+            }
+            else write("err " + err, "red")
+        })
+
+        var balanceevent = contractInstance.Balance({});
+        balanceevent.watch((err, result) => {
+            if (!err) {
+                balances[result.args._addy] = result.args._amount;
+                updateBalance();
+                //write("balance updated");
+            }
+            else write("err " + err, "red")
+        })
+
+        var buyevent = contractInstance.BuyToken({});
+        buyevent.watch((err, result) => {
+            if (!err) {
+                write(result.args._addy + " bought " + result.args._amount + " tokens")
+                updateBalance();
+                updateWei();
+            }
+            else write("err " + err, "red")
+        })
+
+        var sellevent = contractInstance.SellToken({});
+        buyevent.watch((err, result) => {
+            if (!err) {
+                write(result.args._addy + " sold " + result.args._amount + " tokens")
+                updateBalance();
+                updateWei();
+            }
+            else write("err " + err, "red")
+        })
+    }
+
+    function runfunction() {
+        let name = $("#functionname >select").val();
+        let plist = [];
+        $("#functionparams input").each((i, v) => plist.push(v.value));
+        new Promise((resolve, reject) => {
+
+            plist.push(function (err, res) {
+                if (!err) resolve(res);
+                reject(err);
+            })
+            contractInstance[name].apply(contractInstance, plist)
+        }).then((d) => {
+            if (d) write(name + ": " + d)
+            else write(name);
+        }).catch((e) => {
+            write("ERROR " + name + ": " + e, "red")
+        })
+        /*   contractInstance[name](function(err,res){
+                   console.log(err,res);
+               })
+               */
+    }
+    var contractInstance
+    /*
+            contractAddressPromise.then((address)=>{
+    
+    
+                
+                
+                var win = contractInstance.sing2();
+                console.log("sing2",win);
+    
+                console.log("Random num",contractInstance.randomNumber().toString(10))
+                
+                contractInstance.setSinging("aaaaaaaaaaaaaaaaa");
+                console.log("sing",contractInstance.sing())
+                
+            }).catch((err) =>{
+                console.log("err",err);
+            })
+        }
+    */
+    function write(s, color) {
+        console.log(s)
+        var line = $("<div>").text(s);
+        if (color) line.css("color", color)
+        $("#console").append(line);
+        $("#console").scrollTop($("#console")[0].scrollHeight);
+    }
+//var soliditycode = fs.readFileSync("bin/Ballot.json")
+//var soliditycode = fs.readFileSync("bin/HappyBirthday.json")
+
+</script>
