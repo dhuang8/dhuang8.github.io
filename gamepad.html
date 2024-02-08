@@ -1,0 +1,66 @@
+<script>
+console.log("running");
+let started = false;
+let prevTs = 0;
+let directions = ["u","uf","f","df","d","db","b","ub"];
+
+window.addEventListener("gamepadconnected", (e) => {
+    console.log(
+		"Gamepad connected at index %d: %s. %d buttons, %d axes.",
+		e.gamepad.index,
+		e.gamepad.id,
+		e.gamepad.buttons.length,
+		e.gamepad.axes.length,
+    );
+	if (!started && e.gamepad.index == 0) {
+		started = true;
+		loop();
+	}
+});
+function loop() {
+	const gamepad = navigator.getGamepads()[0];
+	if (prevTs != gamepad.timestamp) {
+		let dir;
+		if (gamepad.axes[9] < -1 || gamepad.axes[9] > 1) {
+			dir = "n";
+		} else {
+			dir = directions[Math.round(gamepad.axes[9]*3.5+3.5)]
+		}
+		let buttons = [];
+		gamepad.buttons.forEach((button,i) =>{
+			if (button.pressed)
+				buttons.push(i);
+		})
+		console.log((gamepad.timestamp-prevTs)*3/50, [dir, ...buttons].join("+"));
+		addRow((gamepad.timestamp-prevTs)*3/50, [dir, ...buttons].join("+"));
+		prevTs = gamepad.timestamp;
+	}
+	setTimeout(loop,1);
+}
+
+let rows = [];
+function addRow(ts, input) {
+	let tr = document.createElement("tr");
+	let td1 = document.createElement("td");
+	td1.textContent = round(ts);
+	let td2 = document.createElement("td");
+	td2.textContent = input;
+	tr.appendChild(td1);
+	tr.appendChild(td2);
+	rows.push(tr);
+	if (rows.length > 10) rows.shift();
+	const table = document.getElementById("table");
+	table.innerHTML = "";
+	rows.forEach(row => {
+		document.getElementById("table").appendChild(row);
+	})
+}
+function round(i) {
+	return Math.round(i*100)/100;
+}
+</script>
+<body>
+	<table id="table">
+
+	</table>
+</body>
